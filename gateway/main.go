@@ -24,7 +24,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://devmetric.onrender.com", "http://localhost:3000"},
+		AllowOrigins:     []string{"https://dev-metric-jet.vercel.app", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		AllowCredentials: true,
