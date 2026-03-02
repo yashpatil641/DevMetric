@@ -1,0 +1,41 @@
+
+services:
+  ai-service:
+    build:
+      context: ./ai-service
+      target: builder          
+    volumes:
+      - ./ai-service:/app      
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash-lite}
+
+  gateway:
+    build:
+      context: ./gateway
+      target: builder          
+    volumes:
+      - ./gateway:/build       
+    command: ["go", "run", "."]
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - AI_SERVICE_URL=http://ai-service:8000
+      - FIREBASE_CREDENTIALS_PATH=/build/serviceAccountKey.json
+
+  frontend:
+    build:
+      context: ./frontend
+      target: deps             
+    volumes:
+      - ./frontend:/app        
+      - /app/node_modules      
+    command: ["npm", "run", "dev"]
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080

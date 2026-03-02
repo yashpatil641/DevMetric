@@ -48,7 +48,71 @@ The frontend sends a username to the Go gateway, which fetches the user's GitHub
 
 ---
 
-## Installation
+## Docker
+
+The entire stack runs in containers. Every service uses a **multi-stage build** and runs as a **non-root user**.
+
+### Quick Start
+
+```bash
+# 1. Copy the root env template and add your Google API key
+cp .env.example .env
+
+# 2. Make sure gateway/serviceAccountKey.json exists (Firebase credentials)
+
+# 3. Build and start everything
+make up            # or: docker compose up --build -d
+```
+
+| Service | Container | Port |
+|---|---|---|
+| Frontend | `devmetric-frontend` | [localhost:3000](http://localhost:3000) |
+| Gateway | `devmetric-gateway` | [localhost:8080](http://localhost:8080) |
+| AI Service | `devmetric-ai` | internal only |
+
+### Development Mode (Hot-Reload)
+
+```bash
+make dev           # or: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Source directories are bind-mounted so changes are reflected instantly.
+
+### Makefile Commands
+
+```
+make up            Start all services (production)
+make dev           Start with hot-reload (development)
+make down          Stop and remove containers
+make build         Build all Docker images
+make logs          Tail logs from all services
+make ps            Show running containers
+make clean         Remove images, volumes, and orphans
+make restart       Restart all services
+```
+
+### Docker Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  docker compose                              devmetric-net      │
+│                                                                 │
+│  ┌──────────────┐   ┌──────────────────┐   ┌────────────────┐   │
+│  │  frontend    │──►│    gateway       │──►│   ai-service   │   │
+│  │  Next.js     │   │    Go / Gin      │   │   FastAPI      │   │
+│  │  :3000       │   │    :8080         │   │   :8000        │   │
+│  │  node:alpine │   │    distroless    │   │   python:slim  │   │
+│  └──────────────┘   │                  │   │                │   │
+│                     └──────────────────┘   │  LangChain +   │   │
+│                                            │  Gemini        │   │
+│                                            └────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Manual Installation
 
 **1. AI Service**
 
